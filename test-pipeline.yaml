@@ -33,7 +33,7 @@ spec:
             - name: SNAPSHOT
               type: string
               description: "AppStudio snapshot (see example above)"
-            - name: SNAPSHOT
+            - name: APP_INTERFACE_SECRET
               type: string
               default: app-interface
               description: "Secret for connecting to app-interface"
