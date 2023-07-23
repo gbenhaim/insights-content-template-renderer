@@ -1,0 +1,66 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: bonfire
+  labels:
+    build.appstudio.redhat.com/pipeline: "bonfire"
+spec:
+  params:
+    - name: SNAPSHOT
+      type: string
+      description: |
+        Spec section of an ApplicationSnapshot resource. Not all fields of the
+        resource are required. A minimal example:
+          {
+            "components": [
+              {
+                "containerImage": "quay.io/example/repo:latest"
+              }
+            ]
+          }
+        Each "containerImage" in the "components" array is validated.
+  results:
+    - name: TEST_OUTPUT
+      value: "$(tasks.run-test.results.TEST_OUTPUT)"
+      description: ""
+  tasks:
+    - name: run-test
+      params:
+        - name: SNAPSHOT
+          value: "$(params.SNAPSHOT)"
+      taskSpec:
+          params:
+            - name: SNAPSHOT
+              type: string
+              description: "AppStudio snapshot (see example above)"
+            - name: SNAPSHOT
+              type: string
+              default: app-interface
+              description: "Secret for connecting to app-interface"
+          results:
+            - name: TEST_OUTPUT
+              description: ""
+          steps:
+            - name: run-test
+              image: registry.access.redhat.com/ubi8/ubi:latest
+              env:
+                - name: APP_INTERFACE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: $(params.APP_INTERFACE_SECRET)
+                      key: username
+                - name: APP_INTERFACE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: $(params.APP_INTERFACE_SECRET)
+                      key: password
+                - name: APP_INTERFACE_BASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: $(params.APP_INTERFACE_SECRET)
+                      key: baseurl
+              script: |
+                #!/bin/bash
+                set -ex
+                echo "$(params.SNAPSHOT)"
+                echo "$(params.SNAPSHOT)" > $(results.TEST_OUTPUT.path)
