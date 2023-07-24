@@ -98,11 +98,8 @@ spec:
                     echo "To be implemented"
                 }
 
-                # Workaround for common_container_logic.sh
-                export QUAY_USER="dummy"
-                export QUAY_TOKEN="dummy"
-                export RH_REGISTRY_USER="dummy"
-                export RH_REGISTRY_TOKEN="dummy"
+                export SKIP_REGISTRY_LOGIN=true
+                export CICD_REPO_ORG=gbenhaim
 
                 # Install bonfire repo/initialize
                 CICD_URL=https://raw.githubusercontent.com/RedHatInsights/bonfire/master/cicd
