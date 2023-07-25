@@ -37,6 +37,33 @@ spec:
               type: string
               default: app-interface
               description: "Secret for connecting to app-interface"
+            - name: APP_NAME
+              type: string
+              description: name of app-sre "application" folder this component lives in
+            - name: COMPONENT_NAME
+              type: string
+              description: name of app-sre "resourceTemplate" in deploy.yaml for this component
+            - name: COMPONENTS
+              type: string
+              description: space-separated list of components to load
+            - name: COMPONENTS_W_RESOURCES
+              type: string
+              description: component to keep
+            - name: IQE_PLUGINS
+              type: string
+              description: name of the IQE plugin for this app.
+            - name: IQE_MARKER_EXPRESSION
+              type: string
+              description: This is the value passed to pytest -m
+            - name: IQE_FILTER_EXPRESSION
+              type: string
+              description: This is the value passed to pytest -k
+            - name: IQE_REQUIREMENTS_PRIORITY
+              type: string
+              description: ""
+            - name: IQE_CJI_TIMEOUT
+              type: string
+              description: This is the time to wait for smoke test to complete or fail
           results:
             - name: TEST_OUTPUT
               description: ""
