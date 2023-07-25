@@ -42,7 +42,7 @@ spec:
               description: ""
           steps:
             - name: run-test
-              image: registry.access.redhat.com/ubi9/python-39:latest
+              image: quay.io/gbenhaim0/bonfire:latest
               env:
                 - name: APP_INTERFACE_USERNAME
                   valueFrom:
