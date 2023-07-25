@@ -42,7 +42,7 @@ spec:
               description: ""
           steps:
             - name: run-test
-              image: quay.io/gbenhaim0/bonfire:latest
+              image: quay.io/redhat-user-workloads/gbenhaim-tenant/bonfire-image/bonfire-image@sha256:dd728b307eb36b34f1230cf31cb224947a3d4f63fa225cc1fb20b839ecef92d7
               env:
                 - name: APP_INTERFACE_USERNAME
                   valueFrom:
