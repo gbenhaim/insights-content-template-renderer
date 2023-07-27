@@ -139,9 +139,9 @@ spec:
                 - name: SNAPSHOT
                   value: $(params.SNAPSHOT)
                 - name: JOB_NAME
-                  value: $(context.pipelineRun.name)
+                  value: rhtap
                 - name: BUILD_NUMBER
-                  value: $(context.pipelineRun.uid)
+                  value: $(context.pipelineRun.name)
               script: |
                 #!/bin/bash
                 set -ex
