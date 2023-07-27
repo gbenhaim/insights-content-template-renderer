@@ -40,36 +40,49 @@ spec:
             - name: APP_NAME
               type: string
               description: name of app-sre "application" folder this component lives in
+              default: ccx-data-pipeline
             - name: COMPONENT_NAME
               type: string
               description: name of app-sre "resourceTemplate" in deploy.yaml for this component
+              default: insights-content-template-renderer
             - name: COMPONENTS
               type: string
               description: space-separated list of components to load
+              default: insights-content-template-renderer
             - name: COMPONENTS_W_RESOURCES
               type: string
               description: component to keep
+              default: insights-content-template-renderer
             - name: IQE_PLUGINS
               type: string
               description: name of the IQE plugin for this app.
+              default: ccx
             - name: IQE_MARKER_EXPRESSION
               type: string
               description: This is the value passed to pytest -m
+              default: ""
             - name: IQE_FILTER_EXPRESSION
               type: string
               description: This is the value passed to pytest -k
+              default: test_plugin_accessible
             - name: IQE_REQUIREMENTS_PRIORITY
               type: string
               description: ""
+              default: ""
+            - name: IQE_TEST_IMPORTANCE
+              type: string
+              description: ""
+              default: ""
             - name: IQE_CJI_TIMEOUT
               type: string
               description: This is the time to wait for smoke test to complete or fail
+              default: 30m
           results:
             - name: TEST_OUTPUT
               description: ""
           steps:
             - name: run-test
-              image: quay.io/redhat-user-workloads/gbenhaim-tenant/bonfire-image/bonfire-image@sha256:dd728b307eb36b34f1230cf31cb224947a3d4f63fa225cc1fb20b839ecef92d7
+              image: quay.io/redhat-user-workloads/gbenhaim-tenant/bonfire-image/bonfire-image:90a937deeaf37599e9159d59230e0635337664c1
               env:
                 - name: APP_INTERFACE_USERNAME
                   valueFrom:
@@ -86,62 +99,51 @@ spec:
                     secretKeyRef:
                       name: $(params.APP_INTERFACE_SECRET)
                       key: baseurl
+                - name: APP_NAME
+                  value: $(params.APP_NAME)
+                - name: COMPONENT_NAME
+                  value: $(params.COMPONENT_NAME)
+                - name: COMPONENTS
+                  value: $(params.COMPONENTS)
+                - name: COMPONENTS_W_RESOURCES
+                  value: $(params.COMPONENTS_W_RESOURCES)
+                - name: IQE_PLUGINS
+                  value: $(params.IQE_PLUGINS)
+                - name: IQE_MARKER_EXPRESSION
+                  value: $(params.IQE_MARKER_EXPRESSION)
+                - name: IQE_FILTER_EXPRESSION
+                  value: $(params.IQE_FILTER_EXPRESSION)
+                - name: IQE_REQUIREMENTS_PRIORITY
+                  value: $(params.IQE_REQUIREMENTS_PRIORITY)
+                - name: IQE_CJI_TIMEOUT
+                  value: $(params.IQE_CJI_TIMEOUT)
+                - name: SKIP_REGISTRY_LOGIN
+                  value: "true"
+                - name: CICD_REPO_ORG
+                  value: gbenhaim
               script: |
                 #!/bin/bash
                 set -ex
-                echo "$(params.SNAPSHOT)"
-                echo "$(params.SNAPSHOT)" > $(results.TEST_OUTPUT.path)
-
-                APP_NAME="ccx-data-pipeline"  # name of app-sre "application" folder this component lives in
-                COMPONENT_NAME="insights-content-template-renderer"  # name of app-sre "resourceTemplate" in deploy.yaml for this component
-
-                COMPONENTS="insights-content-template-renderer"  # space-separated list of components to laod
-                COMPONENTS_W_RESOURCES="insights-content-template-renderer"  # component to keep
-                # CACHE_FROM_LATEST_IMAGE="true"
-
-                export IQE_PLUGINS="ccx"
-                export IQE_MARKER_EXPRESSION=""
-                # Workaround: There are no specific integration tests. Check that the service loads and iqe plugin works.
-                export IQE_FILTER_EXPRESSION="test_plugin_accessible"
-                export IQE_REQUIREMENTS_PRIORITY=""
-                export IQE_TEST_IMPORTANCE=""
-                export IQE_CJI_TIMEOUT="30m"
-
-
-                function build_image() {
-                    source $CICD_ROOT/build.sh
-                }
-
-                function deploy_ephemeral() {
-                    source $CICD_ROOT/deploy_ephemeral_env.sh
-                }
-
-                function run_smoke_tests() {
-                    # component name needs to be re-export to match ClowdApp name (as bonfire requires for this)
-                    
-                    # TODO: Uncomment when there are any tests
-                    # export COMPONENT_NAME="insights-content-template-renderer"
-                    # source $CICD_ROOT/cji_smoke_test.sh
-                    echo "To be implemented"
-                }
-
-                export SKIP_REGISTRY_LOGIN=true
-                export CICD_REPO_ORG=gbenhaim
 
                 # Install bonfire repo/initialize
                 CICD_URL=https://raw.githubusercontent.com/RedHatInsights/bonfire/master/cicd
                 curl -s $CICD_URL/bootstrap.sh > .cicd_bootstrap.sh && source .cicd_bootstrap.sh
                 
-                # echo "creating PR image"
-                # build_image
-
                 echo "deploying to ephemeral"
 
                 # Override with values from the appstudio snapshot
-                export IMAGE="quay.io/cloudservices/insights-content-template-renderer"
-                export IMAGE_TAG=""
+                # export IMAGE="quay.io/cloudservices/insights-content-template-renderer"
 
-                deploy_ephemeral
+                eval \$(python3 /opt/app-root/src/parse-snapshot.py <<<$(params.SNAPSHOT))
+
+                source $CICD_ROOT/deploy_ephemeral_env.sh
 
                 echo "running PR smoke tests"
-                run_smoke_tests
+                # source $CICD_ROOT/cji_smoke_test.sh
+
+
+
+# Reserve namespace
+  # Finally release namespace
+# Deploy resources
+# Run tests cicd-tools/cji_smoke_test.sh
