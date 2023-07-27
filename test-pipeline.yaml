@@ -148,7 +148,7 @@ spec:
                 # Override with values from the appstudio snapshot
                 # export IMAGE="quay.io/cloudservices/insights-content-template-renderer"
 
-                eval \$(python3 /opt/app-root/src/parse-snapshot.py <<<$(params.SNAPSHOT))
+                eval \$(python3 /opt/app-root/src/parse-snapshot.py <<<'$(params.SNAPSHOT)')
 
                 source $CICD_ROOT/deploy_ephemeral_env.sh
 
