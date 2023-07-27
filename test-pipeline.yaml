@@ -86,7 +86,7 @@ spec:
               description: ""
           steps:
             - name: run-test
-              image: quay.io/redhat-user-workloads/gbenhaim-tenant/bonfire-image/bonfire-image:90a937deeaf37599e9159d59230e0635337664c1
+              image: quay.io/redhat-user-workloads/gbenhaim-tenant/bonfire-image/bonfire-image:2fe3669f0ad4d89ddc2a9d154567c870c0de3ae1
               env:
                 - name: APP_INTERFACE_USERNAME
                   valueFrom:
@@ -135,6 +135,9 @@ spec:
                   value: "true"
                 - name: CICD_REPO_ORG
                   value: gbenhaim
+                # String interpolation is easier when injecting the SNAPSHOT to an env var.
+                - name: SNAPSHOT
+                  value: $(params.SNAPSHOT)
               script: |
                 #!/bin/bash
                 set -ex
@@ -148,7 +151,7 @@ spec:
                 # Override with values from the appstudio snapshot
                 # export IMAGE="quay.io/cloudservices/insights-content-template-renderer"
 
-                eval \$(python3 /opt/app-root/src/parse-snapshot.py <<<'$(params.SNAPSHOT)')
+                eval \$(python3 /opt/app-root/src/parse-snapshot.py)
 
                 source $CICD_ROOT/deploy_ephemeral_env.sh
 
