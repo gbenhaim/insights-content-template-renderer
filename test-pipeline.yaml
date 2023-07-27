@@ -37,6 +37,10 @@ spec:
               type: string
               default: app-interface
               description: "Secret for connecting to app-interface"
+            - name: EPHEMERAL_ENV_PROVIDER_SECRET
+              type: string
+              default: ephemeral-env-provider
+              description: "Secret for connecting to ephemeral env provider cluster"
             - name: APP_NAME
               type: string
               description: name of app-sre "application" folder this component lives in
@@ -99,6 +103,16 @@ spec:
                     secretKeyRef:
                       name: $(params.APP_INTERFACE_SECRET)
                       key: baseurl
+                - name: OC_LOGIN_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
+                      key: token
+                - name: OC_LOGIN_SERVER
+                  valueFrom:
+                    secretKeyRef:
+                      name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
+                      key: url
                 - name: APP_NAME
                   value: $(params.APP_NAME)
                 - name: COMPONENT_NAME
