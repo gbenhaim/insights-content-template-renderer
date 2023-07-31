@@ -155,7 +155,7 @@ spec:
                 # Override with values from the appstudio snapshot
                 # export IMAGE="quay.io/cloudservices/insights-content-template-renderer"
 
-                parsed="$(python3 /opt/app-root/src/parse-snapshot.py)"
+                parsed="$(parse-snapshot.py)"
                 echo "$parsed"
                 eval "$parsed"
 
@@ -163,6 +163,8 @@ spec:
 
                 echo "running PR smoke tests"
                 # source $CICD_ROOT/cji_smoke_test.sh
+
+                echo "this is a test output" > $(results.TEST_OUTPUT.path)
 
 
 
