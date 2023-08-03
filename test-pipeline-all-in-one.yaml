@@ -23,15 +23,11 @@ spec:
     - name: TEST_OUTPUT
       value: "$(tasks.run-test.results.TEST_OUTPUT)"
       description: ""
-  workspaces:
-    - name: ws
   tasks:
     - name: run-test
       params:
         - name: SNAPSHOT
           value: "$(params.SNAPSHOT)"
-        - name: NS_REQUESTER
-          value: "rhtap-$(context.pipelineRun.name)"
       taskSpec:
           params:
             - name: SNAPSHOT
@@ -88,11 +84,9 @@ spec:
           results:
             - name: TEST_OUTPUT
               description: ""
-            - name: NS
-              description: ""
           steps:
             - name: run-test
-              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:83a0d4ebc9a6b441c541bf366882ad58e4bdc2b5191cde55ada7e175e9896d11
+              image: qquay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:749dfb4a66695d05e930e6da141ed9dd15dde23d4a7b2119a4851765f772dcbc
               env:
                 - name: APP_INTERFACE_USERNAME
                   valueFrom:
@@ -144,65 +138,34 @@ spec:
                 # String interpolation is easier when injecting the SNAPSHOT to an env var.
                 - name: SNAPSHOT
                   value: $(params.SNAPSHOT)
+                - name: JOB_NAME
+                  value: rhtap
+                - name: BUILD_NUMBER
+                  value: $(context.pipelineRun.name)
               script: |
                 #!/bin/bash
                 set -ex
 
-                echo "Connecting to the ephemeral namespace cluster"
-                login.sh
-
-                echo "Allocating ephemeral namespace"
-                ns_file="$(mktemp)"
-
-                reserve-ns.sh "$ns_file" "$(params.NS_REQUESTER)"
-                ns="$(cat $ns_file)"
-                cp "$ns_file" $(results.NS.path)
-
+                # Install bonfire repo/initialize
+                CICD_URL=https://raw.githubusercontent.com/RedHatInsights/bonfire/master/cicd
+                curl -s $CICD_URL/bootstrap.sh > .cicd_bootstrap.sh && source .cicd_bootstrap.sh
+                
                 echo "deploying to ephemeral"
+
+                # Override with values from the appstudio snapshot
+                # export IMAGE="quay.io/cloudservices/insights-content-template-renderer"
+
                 parsed="$(parse-snapshot.py)"
                 echo "$parsed"
                 eval "$parsed"
-                deploy.sh "$ns"
+
+                source $CICD_ROOT/deploy_ephemeral_env.sh
 
                 echo "running PR smoke tests"
                 # source $CICD_ROOT/cji_smoke_test.sh
-                echo "this is a test output" > $(results.TEST_OUTPUT.path)
-            - name: release namespace
-              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:83a0d4ebc9a6b441c541bf366882ad58e4bdc2b5191cde55ada7e175e9896d11
-              env:
-                - name: APP_INTERFACE_USERNAME
-                  valueFrom:
-                    secretKeyRef:
-                      name: $(params.APP_INTERFACE_SECRET)
-                      key: username
-                - name: APP_INTERFACE_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: $(params.APP_INTERFACE_SECRET)
-                      key: password
-                - name: APP_INTERFACE_BASE_URL
-                  valueFrom:
-                    secretKeyRef:
-                      name: $(params.APP_INTERFACE_SECRET)
-                      key: baseurl
-                - name: OC_LOGIN_TOKEN
-                  valueFrom:
-                    secretKeyRef:
-                      name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
-                      key: token
-                - name: OC_LOGIN_SERVER
-                  valueFrom:
-                    secretKeyRef:
-                      name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
-                      key: url
-              script: |
-                #!/bin/bash
-                set -ex
-                
-                echo "Connecting to the ephemeral namespace cluster"
-                login.sh
 
-                release-ns.sh "$(results.NS.path)" "$(params.NS_REQUESTER)"
+                echo "this is a test output" > $(results.TEST_OUTPUT.path)
+
 
 # Login
 # Reserve namespace
