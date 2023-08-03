@@ -86,7 +86,7 @@ spec:
               description: ""
           steps:
             - name: run-test
-              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:83a0d4ebc9a6b441c541bf366882ad58e4bdc2b5191cde55ada7e175e9896d11
+              image: qquay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:749dfb4a66695d05e930e6da141ed9dd15dde23d4a7b2119a4851765f772dcbc
               env:
                 - name: APP_INTERFACE_USERNAME
                   valueFrom:
@@ -167,7 +167,7 @@ spec:
                 echo "this is a test output" > $(results.TEST_OUTPUT.path)
 
 
-
+# Login
 # Reserve namespace
   # Finally release namespace
 # Deploy resources
