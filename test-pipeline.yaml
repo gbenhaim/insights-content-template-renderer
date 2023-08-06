@@ -23,6 +23,61 @@ spec:
     - name: TEST_OUTPUT
       value: "$(tasks.run-test.results.TEST_OUTPUT)"
       description: ""
+  finally:
+    - name: release-namespace
+      params:
+        - name: NS
+          value: "$(tasks.run-test.results.NS)"
+        - name: NS_REQUESTER
+          value: "rhtap-$(context.pipelineRun.name)"
+      taskSpec:
+        params:
+          - name: NS
+            type: string
+            description: Namespace name to release
+          - name: NS_REQUESTER
+            type: string
+            description: The name of the person/pipeline that requested the namespace
+        steps:
+          - name: release-namespace
+            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:01400c87b18855eaa1497eb965500556c1eaa06bdeb18600479b6b1f01ba7eee
+            env:
+              - name: APP_INTERFACE_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.APP_INTERFACE_SECRET)
+                    key: username
+              - name: APP_INTERFACE_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.APP_INTERFACE_SECRET)
+                    key: password
+              - name: APP_INTERFACE_BASE_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.APP_INTERFACE_SECRET)
+                    key: baseurl
+              - name: OC_LOGIN_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
+                    key: token
+              - name: OC_LOGIN_SERVER
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
+                    key: url
+              - name: BONFIRE_BOT
+                value: "true"
+            script: |
+              #!/bin/bash
+              set -ex
+              
+              echo "Connecting to the ephemeral namespace cluster"
+              login.sh
+
+              release-ns.sh "$(results.NS.path)" "$(params.NS_REQUESTER)"
+        
   tasks:
     - name: run-test
       params:
@@ -167,42 +222,6 @@ spec:
                 echo "running PR smoke tests"
                 # source $CICD_ROOT/cji_smoke_test.sh
                 echo "this is a test output" > $(results.TEST_OUTPUT.path)
-            - name: release-namespace
-              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:01400c87b18855eaa1497eb965500556c1eaa06bdeb18600479b6b1f01ba7eee
-              env:
-                - name: APP_INTERFACE_USERNAME
-                  valueFrom:
-                    secretKeyRef:
-                      name: $(params.APP_INTERFACE_SECRET)
-                      key: username
-                - name: APP_INTERFACE_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: $(params.APP_INTERFACE_SECRET)
-                      key: password
-                - name: APP_INTERFACE_BASE_URL
-                  valueFrom:
-                    secretKeyRef:
-                      name: $(params.APP_INTERFACE_SECRET)
-                      key: baseurl
-                - name: OC_LOGIN_TOKEN
-                  valueFrom:
-                    secretKeyRef:
-                      name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
-                      key: token
-                - name: OC_LOGIN_SERVER
-                  valueFrom:
-                    secretKeyRef:
-                      name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
-                      key: url
-              script: |
-                #!/bin/bash
-                set -ex
-                
-                echo "Connecting to the ephemeral namespace cluster"
-                login.sh
-
-                release-ns.sh "$(results.NS.path)" "$(params.NS_REQUESTER)"
 
 # Login
 # Reserve namespace
