@@ -40,7 +40,7 @@ spec:
             description: The name of the person/pipeline that requested the namespace
         steps:
           - name: release-namespace
-            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:01400c87b18855eaa1497eb965500556c1eaa06bdeb18600479b6b1f01ba7eee
+            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:f4ab67edf9cc6415d71f1620da3a52d2f7baa5092f252de043a76f3758fc977f
             env:
               - name: APP_INTERFACE_USERNAME
                 valueFrom:
@@ -145,7 +145,7 @@ spec:
               description: ""
           steps:
             - name: run-test
-              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:01400c87b18855eaa1497eb965500556c1eaa06bdeb18600479b6b1f01ba7eee
+              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:f4ab67edf9cc6415d71f1620da3a52d2f7baa5092f252de043a76f3758fc977f
               env:
                 - name: APP_INTERFACE_USERNAME
                   valueFrom:
