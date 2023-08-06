@@ -76,7 +76,7 @@ spec:
               echo "Connecting to the ephemeral namespace cluster"
               login.sh
 
-              release-ns.sh "$(results.NS.path)" "$(params.NS_REQUESTER)"
+              release-ns.sh "$(params.NS)" "$(params.NS_REQUESTER)"
         
   tasks:
     - name: run-test
