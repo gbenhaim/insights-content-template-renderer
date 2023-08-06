@@ -296,4 +296,4 @@ spec:
 
                 echo "Running the test"
                 oc_wrapper project "$(params.NS)"
-                oc_wrapper get oc get deployments > "$(results.TEST_OUTPUT.path)"
+                oc_wrapper get deployments > "$(results.TEST_OUTPUT.path)"
