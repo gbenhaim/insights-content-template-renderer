@@ -44,7 +44,7 @@ spec:
             description: "Secret for connecting to ephemeral env provider cluster"
         steps:
           - name: release-namespace
-            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:1b4dd069bb20b1e24816a1e98570a8e7cf88bdf23583e4ad9126de4774ee8258
+            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:3ad9ca2614e1f281f141b17c4c18fc8fa4f584aa5f6b71cb50759b292df70f8e
             env:
               - name: OC_LOGIN_TOKEN
                 valueFrom:
@@ -87,7 +87,7 @@ spec:
             description: ""
         steps:
           - name: reserve-namespace
-            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:1b4dd069bb20b1e24816a1e98570a8e7cf88bdf23583e4ad9126de4774ee8258
+            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:3ad9ca2614e1f281f141b17c4c18fc8fa4f584aa5f6b71cb50759b292df70f8e
             env:
               - name: OC_LOGIN_TOKEN
                 valueFrom:
@@ -157,7 +157,7 @@ spec:
               default: insights-content-template-renderer
           steps:
             - name: deploy-application
-              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:1b4dd069bb20b1e24816a1e98570a8e7cf88bdf23583e4ad9126de4774ee8258
+              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:3ad9ca2614e1f281f141b17c4c18fc8fa4f584aa5f6b71cb50759b292df70f8e
               env:
                 - name: APP_INTERFACE_USERNAME
                   valueFrom:
@@ -261,7 +261,7 @@ spec:
               description: ""
           steps:
             - name: run-test
-              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:1b4dd069bb20b1e24816a1e98570a8e7cf88bdf23583e4ad9126de4774ee8258
+              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:3ad9ca2614e1f281f141b17c4c18fc8fa4f584aa5f6b71cb50759b292df70f8e
               env:
                 - name: OC_LOGIN_TOKEN
                   valueFrom:
