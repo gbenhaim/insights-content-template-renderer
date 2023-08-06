@@ -23,8 +23,6 @@ spec:
     - name: TEST_OUTPUT
       value: "$(tasks.run-test.results.TEST_OUTPUT)"
       description: ""
-  workspaces:
-    - name: ws
   tasks:
     - name: run-test
       params:
@@ -92,7 +90,7 @@ spec:
               description: ""
           steps:
             - name: run-test
-              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:83a0d4ebc9a6b441c541bf366882ad58e4bdc2b5191cde55ada7e175e9896d11
+              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:01400c87b18855eaa1497eb965500556c1eaa06bdeb18600479b6b1f01ba7eee
               env:
                 - name: APP_INTERFACE_USERNAME
                   valueFrom:
@@ -144,6 +142,8 @@ spec:
                 # String interpolation is easier when injecting the SNAPSHOT to an env var.
                 - name: SNAPSHOT
                   value: $(params.SNAPSHOT)
+                - name: BONFIRE_BOT
+                  value: "true"
               script: |
                 #!/bin/bash
                 set -ex
@@ -162,13 +162,13 @@ spec:
                 parsed="$(parse-snapshot.py)"
                 echo "$parsed"
                 eval "$parsed"
-                deploy.sh "$ns"
+                deploy.sh "$ns" "$(params.NS_REQUESTER)"
 
                 echo "running PR smoke tests"
                 # source $CICD_ROOT/cji_smoke_test.sh
                 echo "this is a test output" > $(results.TEST_OUTPUT.path)
-            - name: release namespace
-              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:83a0d4ebc9a6b441c541bf366882ad58e4bdc2b5191cde55ada7e175e9896d11
+            - name: release-namespace
+              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:01400c87b18855eaa1497eb965500556c1eaa06bdeb18600479b6b1f01ba7eee
               env:
                 - name: APP_INTERFACE_USERNAME
                   valueFrom:
