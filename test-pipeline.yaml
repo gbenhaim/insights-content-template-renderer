@@ -27,7 +27,7 @@ spec:
     - name: release-namespace
       params:
         - name: NS
-          value: "$(tasks.run-test.results.NS)"
+          value: "$(tasks.reserve-namespace.results.NS)"
         - name: NS_REQUESTER
           value: "rhtap-$(context.pipelineRun.name)"
       taskSpec:
@@ -38,25 +38,14 @@ spec:
           - name: NS_REQUESTER
             type: string
             description: The name of the person/pipeline that requested the namespace
+          - name: EPHEMERAL_ENV_PROVIDER_SECRET
+            type: string
+            default: ephemeral-env-provider
+            description: "Secret for connecting to ephemeral env provider cluster"
         steps:
           - name: release-namespace
             image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:f4ab67edf9cc6415d71f1620da3a52d2f7baa5092f252de043a76f3758fc977f
             env:
-              - name: APP_INTERFACE_USERNAME
-                valueFrom:
-                  secretKeyRef:
-                    name: $(params.APP_INTERFACE_SECRET)
-                    key: username
-              - name: APP_INTERFACE_PASSWORD
-                valueFrom:
-                  secretKeyRef:
-                    name: $(params.APP_INTERFACE_SECRET)
-                    key: password
-              - name: APP_INTERFACE_BASE_URL
-                valueFrom:
-                  secretKeyRef:
-                    name: $(params.APP_INTERFACE_SECRET)
-                    key: baseurl
               - name: OC_LOGIN_TOKEN
                 valueFrom:
                   secretKeyRef:
@@ -76,15 +65,61 @@ spec:
               echo "Connecting to the ephemeral namespace cluster"
               login.sh
 
+              echo "Releasing ephemeral namespace"
               release-ns.sh "$(params.NS)" "$(params.NS_REQUESTER)"
         
   tasks:
-    - name: run-test
+    - name: reserve-namespace
+      params:
+        - name: NS_REQUESTER
+          value: "rhtap-$(context.pipelineRun.name)"
+      taskSpec:
+        params:
+          - name: NS_REQUESTER
+            type: string
+            description: The name of the person/pipeline that requested the namespace
+          - name: EPHEMERAL_ENV_PROVIDER_SECRET
+            type: string
+            default: ephemeral-env-provider
+            description: "Secret for connecting to ephemeral env provider cluster"
+        results:
+          - name: NS
+            description: ""
+        steps:
+          - name: reserve-namespace
+            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:f4ab67edf9cc6415d71f1620da3a52d2f7baa5092f252de043a76f3758fc977f
+            env:
+              - name: OC_LOGIN_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
+                    key: token
+              - name: OC_LOGIN_SERVER
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
+                    key: url
+              - name: BONFIRE_BOT
+                value: "true"
+            script: |
+              #!/bin/bash
+              set -ex
+
+              echo "Connecting to the ephemeral namespace cluster"
+              login.sh
+
+              echo "Allocating ephemeral namespace"
+              reserve-ns.sh $(results.NS.path) "$(params.NS_REQUESTER)"
+    - name: deploy-application
       params:
         - name: SNAPSHOT
           value: "$(params.SNAPSHOT)"
+        - name: NS
+          value: "$(tasks.reserve-namespace.results.NS)"
         - name: NS_REQUESTER
           value: "rhtap-$(context.pipelineRun.name)"
+      runAfter:
+        - reserve-namespace
       taskSpec:
           params:
             - name: SNAPSHOT
@@ -98,6 +133,12 @@ spec:
               type: string
               default: ephemeral-env-provider
               description: "Secret for connecting to ephemeral env provider cluster"
+            - name: NS
+              type: string
+              description: Namespace name to deploy the application to
+            - name: NS_REQUESTER
+              type: string
+              description: The name of the person/pipeline that requested the namespace
             - name: APP_NAME
               type: string
               description: name of app-sre "application" folder this component lives in
@@ -114,37 +155,8 @@ spec:
               type: string
               description: component to keep
               default: insights-content-template-renderer
-            - name: IQE_PLUGINS
-              type: string
-              description: name of the IQE plugin for this app.
-              default: ccx
-            - name: IQE_MARKER_EXPRESSION
-              type: string
-              description: This is the value passed to pytest -m
-              default: ""
-            - name: IQE_FILTER_EXPRESSION
-              type: string
-              description: This is the value passed to pytest -k
-              default: test_plugin_accessible
-            - name: IQE_REQUIREMENTS_PRIORITY
-              type: string
-              description: ""
-              default: ""
-            - name: IQE_TEST_IMPORTANCE
-              type: string
-              description: ""
-              default: ""
-            - name: IQE_CJI_TIMEOUT
-              type: string
-              description: This is the time to wait for smoke test to complete or fail
-              default: 30m
-          results:
-            - name: TEST_OUTPUT
-              description: ""
-            - name: NS
-              description: ""
           steps:
-            - name: run-test
+            - name: deploy-application
               image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:f4ab67edf9cc6415d71f1620da3a52d2f7baa5092f252de043a76f3758fc977f
               env:
                 - name: APP_INTERFACE_USERNAME
@@ -180,20 +192,6 @@ spec:
                   value: $(params.COMPONENTS)
                 - name: COMPONENTS_W_RESOURCES
                   value: $(params.COMPONENTS_W_RESOURCES)
-                - name: IQE_PLUGINS
-                  value: $(params.IQE_PLUGINS)
-                - name: IQE_MARKER_EXPRESSION
-                  value: $(params.IQE_MARKER_EXPRESSION)
-                - name: IQE_FILTER_EXPRESSION
-                  value: $(params.IQE_FILTER_EXPRESSION)
-                - name: IQE_REQUIREMENTS_PRIORITY
-                  value: $(params.IQE_REQUIREMENTS_PRIORITY)
-                - name: IQE_CJI_TIMEOUT
-                  value: $(params.IQE_CJI_TIMEOUT)
-                - name: SKIP_REGISTRY_LOGIN
-                  value: "true"
-                - name: CICD_REPO_ORG
-                  value: gbenhaim
                 # String interpolation is easier when injecting the SNAPSHOT to an env var.
                 - name: SNAPSHOT
                   value: $(params.SNAPSHOT)
@@ -206,25 +204,96 @@ spec:
                 echo "Connecting to the ephemeral namespace cluster"
                 login.sh
 
-                echo "Allocating ephemeral namespace"
-                ns_file="$(mktemp)"
-
-                reserve-ns.sh "$ns_file" "$(params.NS_REQUESTER)"
-                ns="$(cat $ns_file)"
-                cp "$ns_file" $(results.NS.path)
-
                 echo "deploying to ephemeral"
                 parsed="$(parse-snapshot.py)"
                 echo "$parsed"
                 eval "$parsed"
-                deploy.sh "$ns" "$(params.NS_REQUESTER)"
+                deploy.sh "$(params.NS)" "$(params.NS_REQUESTER)"
+    - name: run-test
+      params:
+        - name: NS
+          value: "$(tasks.reserve-namespace.results.NS)"
+        - name: NS_REQUESTER
+          value: "rhtap-$(context.pipelineRun.name)"
+      runAfter:
+        - deploy-application
+      taskSpec:
+          params:
+            - name: EPHEMERAL_ENV_PROVIDER_SECRET
+              type: string
+              default: ephemeral-env-provider
+            - name: NS
+              type: string
+              description: Namespace name to deploy the application to
+            - name: NS_REQUESTER
+              type: string
+              description: The name of the person/pipeline that requested the namespace
+            - name: COMPONENT_NAME
+              type: string
+              description: name of app-sre "resourceTemplate" in deploy.yaml for this component
+              default: insights-content-template-renderer
+            - name: IQE_PLUGINS
+              type: string
+              description: name of the IQE plugin for this app.
+              default: ccx
+            - name: IQE_MARKER_EXPRESSION
+              type: string
+              description: This is the value passed to pytest -m
+              default: ""
+            - name: IQE_FILTER_EXPRESSION
+              type: string
+              description: This is the value passed to pytest -k
+              default: test_plugin_accessible
+            - name: IQE_REQUIREMENTS_PRIORITY
+              type: string
+              description: ""
+              default: ""
+            - name: IQE_TEST_IMPORTANCE
+              type: string
+              description: ""
+              default: ""
+            - name: IQE_CJI_TIMEOUT
+              type: string
+              description: This is the time to wait for smoke test to complete or fail
+              default: 30m
+          results:
+            - name: TEST_OUTPUT
+              description: ""
+          steps:
+            - name: run-test
+              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:f4ab67edf9cc6415d71f1620da3a52d2f7baa5092f252de043a76f3758fc977f
+              env:
+                - name: OC_LOGIN_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
+                      key: token
+                - name: OC_LOGIN_SERVER
+                  valueFrom:
+                    secretKeyRef:
+                      name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
+                      key: url
+                - name: COMPONENT_NAME
+                  value: $(params.COMPONENT_NAME)
+                - name: IQE_PLUGINS
+                  value: $(params.IQE_PLUGINS)
+                - name: IQE_MARKER_EXPRESSION
+                  value: $(params.IQE_MARKER_EXPRESSION)
+                - name: IQE_FILTER_EXPRESSION
+                  value: $(params.IQE_FILTER_EXPRESSION)
+                - name: IQE_REQUIREMENTS_PRIORITY
+                  value: $(params.IQE_REQUIREMENTS_PRIORITY)
+                - name: IQE_CJI_TIMEOUT
+                  value: $(params.IQE_CJI_TIMEOUT)
+                - name: BONFIRE_BOT
+                  value: "true"
+              script: |
+                #!/bin/bash
+                set -ex
 
-                echo "running PR smoke tests"
-                # source $CICD_ROOT/cji_smoke_test.sh
-                echo "this is a test output" > $(results.TEST_OUTPUT.path)
+                echo "Connecting to the ephemeral namespace cluster"
+                login.sh
 
-# Login
-# Reserve namespace
-  # Finally release namespace
-# Deploy resources
-# Run tests cicd-tools/cji_smoke_test.sh
+                echo "Running the test"
+                oc_wrapper project "$(params.NS)"
+                oc_wrapper get oc get deployments > "$(results.TEST_OUTPUT.path)"
