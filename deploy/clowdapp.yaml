@@ -194,7 +194,7 @@ objects:
 parameters:
 - description: Image name
   name: IMAGE
-  value: quay.io/redhat-user-workloads/gbenhaim-tenant/insights-content-template-renderer/insights-content-template-renderer
+  value: quay.io/redhat-user-workloads/ergonzale-tenant/insights-content-template-renderer/insights-content-template-renderer
 - description: Image tag
   name: IMAGE_TAG
   required: true
