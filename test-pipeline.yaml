@@ -24,7 +24,7 @@ spec:
       value: "$(tasks.run-test.results.TEST_OUTPUT)"
       description: ""
   finally:
-    - name: release-namespace
+    - name: teardown
       params:
         - name: NS
           value: "$(tasks.reserve-namespace.results.NS)"
@@ -42,7 +42,38 @@ spec:
             type: string
             default: ephemeral-env-provider
             description: "Secret for connecting to ephemeral env provider cluster"
+        volumes:
+          - name: artifacts
+            emptyDir: {}
         steps:
+          - name: collect-logs
+            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:3ad9ca2614e1f281f141b17c4c18fc8fa4f584aa5f6b71cb50759b292df70f8e
+            env:
+              - name: OC_LOGIN_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
+                    key: token
+              - name: OC_LOGIN_SERVER
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.EPHEMERAL_ENV_PROVIDER_SECRET)
+                    key: url
+              - name: BONFIRE_BOT
+                value: "true"
+            onError: continue
+            volumeMounts:
+              - name: artifacts
+                mountPath: /artifacts
+            script: |
+              #!/bin/bash
+              set -ex
+              
+              echo "Connecting to the ephemeral namespace cluster"
+              login.sh
+
+              echo "Collecting logs"
+              collect-logs.sh "$(params.NS)" /artifacts
           - name: release-namespace
             image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:3ad9ca2614e1f281f141b17c4c18fc8fa4f584aa5f6b71cb50759b292df70f8e
             env:
