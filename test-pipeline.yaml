@@ -47,7 +47,7 @@ spec:
             emptyDir: {}
         steps:
           - name: collect-logs
-            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:3ad9ca2614e1f281f141b17c4c18fc8fa4f584aa5f6b71cb50759b292df70f8e
+            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:126cf1e5d32eff7e02026c917727244d424d82019587f11e221305b489e73ace
             env:
               - name: OC_LOGIN_TOKEN
                 valueFrom:
@@ -75,7 +75,7 @@ spec:
               echo "Collecting logs"
               collect-logs.sh "$(params.NS)" /artifacts
           - name: release-namespace
-            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:3ad9ca2614e1f281f141b17c4c18fc8fa4f584aa5f6b71cb50759b292df70f8e
+            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:126cf1e5d32eff7e02026c917727244d424d82019587f11e221305b489e73ace
             env:
               - name: OC_LOGIN_TOKEN
                 valueFrom:
@@ -118,7 +118,7 @@ spec:
             description: ""
         steps:
           - name: reserve-namespace
-            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:3ad9ca2614e1f281f141b17c4c18fc8fa4f584aa5f6b71cb50759b292df70f8e
+            image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:126cf1e5d32eff7e02026c917727244d424d82019587f11e221305b489e73ace
             env:
               - name: OC_LOGIN_TOKEN
                 valueFrom:
@@ -188,7 +188,7 @@ spec:
               default: insights-content-template-renderer
           steps:
             - name: deploy-application
-              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:3ad9ca2614e1f281f141b17c4c18fc8fa4f584aa5f6b71cb50759b292df70f8e
+              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:126cf1e5d32eff7e02026c917727244d424d82019587f11e221305b489e73ace
               env:
                 - name: APP_INTERFACE_USERNAME
                   valueFrom:
@@ -292,7 +292,7 @@ spec:
               description: ""
           steps:
             - name: run-test
-              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:3ad9ca2614e1f281f141b17c4c18fc8fa4f584aa5f6b71cb50759b292df70f8e
+              image: quay.io/redhat-user-workloads/rhtap-migration-tenant/bonfire-cicd-tools/cicd-tools@sha256:126cf1e5d32eff7e02026c917727244d424d82019587f11e221305b489e73ace
               env:
                 - name: OC_LOGIN_TOKEN
                   valueFrom:
