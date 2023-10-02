@@ -25,4 +25,10 @@ USER 1001
 
 EXPOSE 8000
 
+LABEL \
+    io.k8s.description=insights-content-template-renderer \
+    io.k8s.description=insights-content-template-renderer \
+    io.openshift.tags="" \
+    summary=insights-content-template-renderer
+
 CMD ["uvicorn", "insights_content_template_renderer.endpoints:app", "--host=0.0.0.0", "--port=8000", "--log-config", "logging.yml"]
