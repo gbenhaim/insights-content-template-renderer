@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8-minimal:8.8-860
+FROM registry.access.redhat.com/ubi8-minimal:8.8-1072
 
 ENV VENV=/insights-content-template-renderer-venv \
     HOME=/insights-content-template-renderer
@@ -23,5 +23,11 @@ RUN microdnf clean all
 USER 1001
 
 EXPOSE 8000
+
+LABEL \
+    io.k8s.description=insights-content-template-renderer \
+    io.k8s.description=insights-content-template-renderer \
+    io.openshift.tags="" \
+    summary=insights-content-template-renderer
 
 CMD ["uvicorn", "insights_content_template_renderer.endpoints:app", "--host=0.0.0.0", "--port=8000", "--log-config", "logging.yml"]
