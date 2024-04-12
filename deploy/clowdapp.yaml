@@ -69,10 +69,10 @@ objects:
           resources:
             limits:
               cpu: "${CPU_LIMIT}"
-              memory: 400Mi
+              memory: "${MEMORY_LIMIT}"
             requests:
               cpu: "${CPU_REQUEST}"
-              memory: 200Mi
+              memory: "${MEMORY_REQUEST}"
           volumeMounts:
           - name: config
             mountPath: "/insights-content-template-renderer/logging.yml"
@@ -214,3 +214,7 @@ parameters:
 - description: Whether to log into CW
   name: LOGGING_TO_CW_ENABLED
   value: 'True'
+- name: MEMORY_REQUEST
+  value: '200Mi'
+- name: MEMORY_LIMIT
+  value: '400Mi'
