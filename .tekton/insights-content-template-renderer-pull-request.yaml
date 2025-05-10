@@ -394,7 +394,8 @@ spec:
     - name: workspace
     - name: git-auth
       optional: true
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-insights-content-template-renderer
   workspaces:
   - name: workspace
     volumeClaimTemplate:
